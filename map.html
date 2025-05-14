@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>EXSIM Kingswoodz Map</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2FmZmFuZGkiLCJhIjoiY21hZHJ4cnRrMGk0ZTJscHBhdzc1OTN4OCJ9.LwLHYT7qbrekLx53-Id3kQ';
+
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/saffandi/cmagjny7200wx01r4bym51d5b',
+        projection: 'mercator',
+        center: [101.6725, 3.0590],
+        zoom: 15,
+        pitch: 60,
+        bearing: -20,
+        maxBounds: [
+            [99.5, 0.8],
+            [120.5, 7.5]
+        ]
+    });
+
+    // 📍 Custom marker
+    const markerElement = document.createElement('div');
+    markerElement.innerHTML = `<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/48px-Map_marker.svg.png" style="width: 40px; height: 40px;">`;
+
+    const marker1 = new mapboxgl.Marker(markerElement)
+        .setLngLat([101.6725, 3.0590])
+        .setPopup(new mapboxgl.Popup().setHTML('<h3>EXSIM Kingswoodz Residence</h3>'))
+        .addTo(map);
+
+    markerElement.addEventListener('mouseenter', () => marker1.getPopup().addTo(map));
+    markerElement.addEventListener('mouseleave', () => marker1.getPopup().remove());
+
+    map.on('style.load', () => {
+        // 🌫️ Fog settings (heavier atmosphere)
+        map.setFog({
+            color: "#d0e7ff",                   // Light blue mist
+            "horizon-blend": 0.8,               // Smooth transition to fog
+            "high-color": "#ffffff",            // Fog color toward top of screen
+            "space-color": "#eeeeee",           // Background above horizon
+            "star-intensity": 0.0               // Disable stars
+        });
+
+        map.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            url: 'mapbox://mapbox.terrain-rgb',
+            tileSize: 512,
+            maxzoom: 14
+        });
+        map.setTerrain({ source: 'mapbox-dem', exaggeration: 3.2 });
+
+        map.addLayer({
+            id: 'sky',
+            type: 'sky',
+            paint: {
+                'sky-type': 'atmosphere',
+                'sky-atmosphere-sun': [0, 0],
+                'sky-atmosphere-sun-intensity': 15
+            }
+        });
+
+        map.addLayer({
+            id: 'hillshading',
+            type: 'hillshade',
+            source: 'mapbox-dem',
+            paint: { 'hillshade-exaggeration': 1.5 }
+        });
+
+        map.addLayer({
+            id: '3d-buildings',
+            type: 'fill-extrusion',
+            source: 'composite',
+            'source-layer': 'building',
+            filter: ['==', 'extrude', 'true'],
+            paint: {
+                'fill-extrusion-color': '#FFD700',
+                'fill-extrusion-height': ['get', 'height'],
+                'fill-extrusion-base': ['get', 'min_height'],
+                'fill-extrusion-opacity': 0.6
+            }
+        });
+    });
+</script>
+</body>
+</html>
